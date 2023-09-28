@@ -6,21 +6,29 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
-from app.libs import database
-from app.utils.base import metadata
 from alembic import context
 
-
-load_dotenv()
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+# Interpret the config file for Python logging.
+# This line sets up loggers basically.
+if config.config_file_name is not None:
+    fileConfig(config.config_file_name)
 
-# Set up the database connection
-engine = database.engine
+# add your model's MetaData object here
+# for 'autogenerate' support
+# from myapp import mymodel
+# target_metadata = mymodel.Base.metadata
+import app.schemas.auth
+from app.utils.base import metadata
 
-# Your model's MetaData object (Base) should be used for 'autogenerate' support.
 target_metadata = metadata
+
+# other values from the config, defined by the needs of env.py,
+# can be acquired:
+# my_important_option = config.get_main_option("my_important_option")
+# ... etc.
 
 
 def run_migrations_offline() -> None:
@@ -35,11 +43,12 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = config.get_main_option(os.environ.get("ENV_SQLSERVER_VOYAGE"))
     context.configure(
         url=url,
         target_metadata=target_metadata,
         literal_binds=True,
+        include_schemas=True,
         dialect_opts={"paramstyle": "named"},
     )
 
@@ -48,15 +57,28 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    """Run migrations in 'online' mode."""
-    with engine.connect() as connection:
+    """Run migrations in 'online' mode.
+
+    In this scenario we need to create an Engine
+    and associate a connection with the context.
+
+    """
+    connectable = engine_from_config(
+        config.get_section(config.config_ini_section, {}),
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+    )
+
+    with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata,
-            compare_type=True,  # Add this option to enable type comparison during migrations
+            connection=connection,
+            target_metadata=target_metadata,
+            include_schemas=True
         )
 
         with context.begin_transaction():
             context.run_migrations()
+
 
 if context.is_offline_mode():
     run_migrations_offline()
