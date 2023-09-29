@@ -23,6 +23,7 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 import app.schemas.auth
+import app.schemas.kpi
 from app.utils.base import metadata
 
 target_metadata = metadata
