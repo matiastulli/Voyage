@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String
-from app.utils.base import Base
+from app.utils.base_utils import Base
 from werkzeug.security import generate_password_hash, check_password_hash
 
 class User(Base):

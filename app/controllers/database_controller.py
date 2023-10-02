@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
 
-class Database():
+class DatabaseController():
     def __init__(self) -> None:
         self.engine = create_engine(os.environ.get("ENV_SQLSERVER_VOYAGE"),
                                     pool_size=10,
@@ -13,4 +13,4 @@ class Database():
     def new_session(self):
         return sessionmaker(bind=self.engine)()
 
-database = Database()
+database_controller = DatabaseController()

@@ -2,4 +2,4 @@
 
 alembic upgrade head
 
-python app.py
+python voyage.py
