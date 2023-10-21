@@ -1,0 +1,41 @@
+Table User {
+  id int [pk]
+  name varchar
+  last_name varchar
+  mail varchar
+  password_hash varchar
+  id_role int  [ref: > Role.id]
+}
+
+Table Role {
+  id int
+  sdes varchar
+}
+
+Table Event {
+  id int [pk]
+  sdes varchar
+  date date
+}
+
+Table EventLocation {
+  id int [pk]
+  id_event int [ref: > Event.id]
+  id_country int [ref: > Country.id]
+  id_city int [ref: > City.id]
+}
+
+Table Country {
+  id int [pk]
+  sdes varchar
+}
+
+Table City {
+  id int [pk]
+  sdes varchar
+}
+
+Table SubscriptionEvent {
+  id_user int [ref: > User.id]
+  id_event int [ref: > Event.id]
+}

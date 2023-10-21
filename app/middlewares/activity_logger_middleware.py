@@ -12,7 +12,7 @@ def log_activity():
         session = database_controller.new_session()
         
         log = Log(
-            user_email = g.current_user.mail,
+            user_mail = g.current_user.mail,
             body_data = json.loads(request.data.decode('utf-8')),
             host = request.host,
             route = request.path,
