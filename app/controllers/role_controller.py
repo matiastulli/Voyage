@@ -1,12 +1,12 @@
-import json
-from flask import request
+from typing import Tuple
+from flask import request, Response, jsonify
 from app.schemas.user import Role
 from app.controllers.database_controller import database_controller
 
 
 class RoleController:
 
-    def create_role(self) -> str:
+    def create_role(self) -> Tuple[Response, int]:
         data = request.json
         with database_controller.DatabaseSession(database_controller) as session:
             new_role = Role(description=data['description'])
@@ -14,40 +14,35 @@ class RoleController:
             session.flush()
             role_id = new_role.id
 
-        return json.dumps({'message': 'Role created', 'id': role_id})
+        return jsonify({'message': 'Role created', 'id': role_id}), 200
 
-    def get_role(self, role_id: int) -> str:
+    def get_role(self, role_id: int) -> Tuple[Response, int]:
         with database_controller.DatabaseSession(database_controller) as session:
             role = session.query(Role).get(role_id)
             if not role:
-                role_data = {'message': 'Role not found'}
-                return json.dumps(role_data)
+                return jsonify({'message': 'Role not found'}), 400
             
-            role_data = {'id': role.id, 'description': role.description}    
-        
-        return json.dumps(role_data)
+            return jsonify({'id': role.id, 'description': role.description}), 200
 
-    def update_role(self, role_id: int) -> str:
+    def update_role(self, role_id: int) -> Tuple[Response, int]:
         data = request.json
         with database_controller.DatabaseSession(database_controller) as session:
             role = session.query(Role).get(role_id)
             if not role:
-                role_data = {'message': 'Role not found'}
-                return json.dumps(role_data)
+                return jsonify({'message': 'Role not found'}), 400
             
             role.description = data.get('description', role.description)
             
-        return json.dumps({'message': 'Role updated'})
+        return jsonify({'message': 'Role updated'}), 200
 
-    def delete_role(self, role_id: int) -> str:
+    def delete_role(self, role_id: int) -> Tuple[Response, int]:
         with database_controller.DatabaseSession(database_controller) as session:
             role = session.query(Role).get(role_id)
             if not role:
-                role_data = {'message': 'Role not found'}
-                return json.dumps(role_data)
+                return jsonify({'message': 'Role not found'}), 400
         
             session.delete(role)
         
-        return json.dumps({'message': 'Role deleted'})
+        return jsonify({'message': 'Role deleted'}), 200
 
 role_controller = RoleController()
