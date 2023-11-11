@@ -1,41 +1,139 @@
-Table User {
-  id int [pk]
-  name varchar
-  last_name varchar
-  mail varchar
-  password_hash varchar
-  id_role int  [ref: > Role.id]
+Table user {
+  id int [pk, increment]
+  name varchar(100) [not null]
+  last_name varchar(100) [not null]
+  mail varchar(100) [not null, unique]
+  password_hash varchar(255) [not null]
+  id_role int [ref: > role.id]
+  created_at DATETIME [default: `CURRENT_TIMESTAMP`]
+  updated_at DATETIME [default: `CURRENT_TIMESTAMP`]
 }
 
-Table Role {
-  id int
-  sdes varchar
+Table user_activity_log {
+  id int [pk, increment]
+  id_user int [ref: > user.id]
+  action varchar(100) [not null]
+  DATETIME datetime [not null]
 }
 
-Table Event {
-  id int [pk]
-  sdes varchar
-  date date
+Table user_payment {
+  id_user int [ref: > user.id]
+  id_payment_method int [ref: > payment_method.id]
+  priority int
+  created_at DATETIME [default: `CURRENT_TIMESTAMP`]
+  updated_at DATETIME [default: `CURRENT_TIMESTAMP`]
 }
 
-Table EventLocation {
-  id int [pk]
-  id_event int [ref: > Event.id]
-  id_country int [ref: > Country.id]
-  id_city int [ref: > City.id]
+Table payment_method {
+  id int [pk, increment]
+  description varchar(100) [not null]
+  method_type varchar(100) [not null]
 }
 
-Table Country {
-  id int [pk]
-  sdes varchar
+Table role {
+  id int [pk, increment]
+  description varchar(50) [not null]
 }
 
-Table City {
-  id int [pk]
-  sdes varchar
+Table event {
+  id int [pk, increment]
+  description varchar(100) [not null]
+  status varchar(50)
+  id_user_creator int [ref: > user.id]
+  created_at DATETIME [default: `CURRENT_TIMESTAMP`]
+  updated_at DATETIME [default: `CURRENT_TIMESTAMP`]
 }
 
-Table SubscriptionEvent {
-  id_user int [ref: > User.id]
-  id_event int [ref: > Event.id]
+Table event_category {
+  id_event int [ref: > event.id]
+  id_category int [ref: > category.id]
+}
+
+Table category {
+  id int [pk, increment]
+  description varchar(50) [not null]
+}
+
+Table image {
+  id int [pk, increment]
+  image_url varchar(255) [not null]
+  description varchar(100) [not null]
+  file_size int
+  format varchar(50)
+  dimensions varchar(50)
+  created_at DATETIME [default: `CURRENT_TIMESTAMP`]
+  updated_at DATETIME [default: `CURRENT_TIMESTAMP`]
+}
+
+Table event_image {
+  id_event int [ref: > event.id]
+  id_image int [ref: > image.id]
+  description varchar(100) [not null]
+  created_at DATETIME [default: `CURRENT_TIMESTAMP`]
+  updated_at DATETIME [default: `CURRENT_TIMESTAMP`]
+}
+
+Table event_location {
+  id_event int [ref: > event.id]
+  id_location int [ref: > location.id]
+  description varchar(100) [not null]
+  start_date DATETIME
+  end_date DATETIME
+  created_at DATETIME [default: `CURRENT_TIMESTAMP`]
+  updated_at DATETIME [default: `CURRENT_TIMESTAMP`]
+}
+
+Table location {
+  id int [pk, increment]
+  description varchar(100) [not null]
+  type varchar(20) [not null]
+  parent_location_id int [ref: > location.id]
+  created_at DATETIME [default: `CURRENT_TIMESTAMP`]
+  updated_at DATETIME [default: `CURRENT_TIMESTAMP`]
+}
+
+Table subscription_event {
+  id int [pk, increment]
+  id_user int [ref: > user.id]
+  id_event int [ref: > event.id]
+  subscription_status varchar(20) [not null]
+  date_subscribed date
+  date_unsubscribed date
+  created_at DATETIME [default: `CURRENT_TIMESTAMP`]
+  updated_at DATETIME [default: `CURRENT_TIMESTAMP`]
+  deleted_at DATETIME // for soft deletes
+}
+
+Table review {
+  id int [pk, increment]
+  id_subscription int [ref: > subscription_event.id]
+  review_text varchar(100) [not null]
+  rating int
+  date_reviewed date
+  created_at DATETIME [default: `CURRENT_TIMESTAMP`]
+  updated_at DATETIME [default: `CURRENT_TIMESTAMP`]
+}
+
+Table service {
+  id int [pk, increment]
+  description varchar(100) [not null]
+  created_at DATETIME [default: `CURRENT_TIMESTAMP`]
+  updated_at DATETIME [default: `CURRENT_TIMESTAMP`]
+}
+
+Table event_service {
+  id_event int [ref: > event.id]
+  id_service int [ref: > service.id]
+  description varchar(100) [not null]
+  created_at DATETIME [default: `CURRENT_TIMESTAMP`]
+  updated_at DATETIME [default: `CURRENT_TIMESTAMP`]
+}
+
+Table notification {
+  id int [pk, increment]
+  id_user int [ref: > user.id]
+  message varchar(255) [not null]
+  status varchar(50) [not null]
+  created_at DATETIME [default: `CURRENT_TIMESTAMP`]
+  read_at DATETIME
 }
