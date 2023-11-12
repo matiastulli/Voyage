@@ -124,7 +124,6 @@ class SubscriptionEvent(Base):
 
     user = relationship('User')
     event = relationship('Event')
-    reviews = relationship('Review')
 
 
 class Service(Base):
