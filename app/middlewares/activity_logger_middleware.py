@@ -8,19 +8,22 @@ from app.schemas.kpi import Log
 def log_activity():
     logger.info("Log activity middleware")
     if g.current_user:
-        
-        session = database_controller.new_session()
-        
-        log = Log(
-            user_mail = g.current_user.mail,
-            body_data = json.loads(request.data.decode('utf-8')),
-            host = request.host,
-            route = request.path,
-            date = datetime.now()
-        )
+        try:
+            body_data = json.loads(request.data.decode('utf-8'))
+        except json.JSONDecodeError as e:
+            logger.error(f"Error decoding JSON: {e}")
+            body_data = None
 
-        session.add(log)
-        session.commit()
-        session.refresh(log)
+        with database_controller.DatabaseSession(database_controller) as session:
+            log = Log(
+                user_mail=g.current_user["mail"],
+                body_data=body_data,
+                host=request.host,
+                route=request.path,
+                date=datetime.now()
+            )
 
-        logger.info(f"User {log.user_email} accessed {log.route} at {log.date}")
+            session.add(log)
+            session.flush()
+
+            logger.info(f"User {log.user_mail} accessed {log.route} at {log.date}")

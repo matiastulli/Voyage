@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 from flask import Flask, request
 from app.controllers.user_controller import UserController
-from app.schemas.auth import User
+from app.schemas.user import User
 from app.controllers.database_controller import database_controller
 
 # Mocking the Flask app for testing

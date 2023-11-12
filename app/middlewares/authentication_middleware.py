@@ -1,34 +1,39 @@
-import jwt
+from loguru import logger
 from flask import request, g
-from flask_jwt_extended import decode_token
+from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 from app.controllers.database_controller import database_controller
-from app.schemas.user import User
+from app.schemas.user import User, Role
+import jwt
 
 def authenticate_request():
     token = request.headers.get('Authorization')
 
     if token and token.startswith('Bearer '):
-        token = token.replace('Bearer ', '')
-
         try:
-            decoded_token = decode_token(token)
-            mail = decoded_token['mail']
+            verify_jwt_in_request()
+            user_id = get_jwt_identity()
 
-            # Aquí podrías cargar el usuario desde la base de datos utilizando mail
-            session = database_controller.new_session()
-            user = session.query(User).filter_by(mail=mail).first()
-            session.close()
+            with database_controller.DatabaseSession(database_controller) as session:
+                user = session.query(User).join(Role).filter(User.id == user_id).first()
+                
+                if user:
+                    g.current_user = {
+                        "id": user.id,
+                        "name": user.name,
+                        "last_name": user.last_name,
+                        "mail": user.mail,
+                        "id_role": user.id_role,
+                        "role_description": user.role.description
+                    }
+                else:
+                    g.current_user = None
 
-            if user:
-                g.current_user = user
-            else:
-                g.current_user = None
-
-        except jwt.ExpiredSignatureError:
-            # Handle token expiration here
+        except jwt.ExpiredSignatureError as exception:
+            logger.error(f"Token expired: {exception}")
             g.current_user = None
-        except jwt.InvalidTokenError:
-            # Handle invalid token here
+        except jwt.InvalidTokenError as exception:
+            logger.error(f"Invalid token: {exception}")
             g.current_user = None
     else:
+        logger.error("No token provided")
         g.current_user = None

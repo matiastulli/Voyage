@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import Tuple
 from flask import request, Response, jsonify
 from flask_jwt_extended import create_access_token
@@ -24,6 +25,7 @@ class UserController:
             user_id = new_user.id
             
             claims = {
+                "id": user_id,
                 "name": new_user.name,
                 "last_name": new_user.last_name,
                 "mail": new_user.mail,
@@ -43,15 +45,22 @@ class UserController:
         
         with database_controller.DatabaseSession(database_controller) as session:
             user = session.query(User).filter_by(mail=data['mail']).first()
+            session.flush()
             
-        if user and user.check_password(data['password']):
-            claims = {"name": user.name,
-                    "last_name": user.last_name,
-                    "mail": user.mail}
-            access_token = create_access_token(identity=user.id, 
-                                               additional_claims= claims)
-            return jsonify({'message': 'User loged', 'access_token': access_token}), 200
+            if not user and not user.check_password(data['password']):
+                return jsonify({'Credenciales incorrectas'}), 400
+            
+            user_id = user.id
+            claims = {
+                "id": user.id,
+                "name": user.name,
+                "last_name": user.last_name,
+                "mail": user.mail
+            }
+            
+        expires_duration = timedelta(days=30)
+        access_token = create_access_token(identity=user_id, additional_claims=claims, expires_delta=expires_duration)
+        return jsonify({'message': 'User loged', 'access_token': access_token}), 200
         
-        return jsonify({'Credenciales incorrectas'}), 400
 
 user_controller = UserController()
