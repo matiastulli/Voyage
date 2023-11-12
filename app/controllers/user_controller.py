@@ -27,15 +27,15 @@ class UserController:
                 "name": new_user.name,
                 "last_name": new_user.last_name,
                 "mail": new_user.mail,
-                "id_role": new_user.id_role  # Assuming id_role is not a lazy-loaded relationship
+                "id_role": new_user.id_role
             }
 
         access_token = create_access_token(identity=user_id, additional_claims=claims)
         
-        if access_token:
-            return jsonify({'message': 'User created', 'id': user_id, 'access_token': access_token}), 200
+        if not access_token:
+            return jsonify({'error': 'No se ha podido generar su usuario'}), 400
         
-        return jsonify({'error': 'No se ha podido generar su usuario'}), 400
+        return jsonify({'message': 'User created', 'id': user_id, 'access_token': access_token}), 200
     
     
     def login_user(self) -> Tuple[Response, int]:

@@ -20,16 +20,21 @@ class RoleController:
         with database_controller.DatabaseSession(database_controller) as session:
             role = session.query(Role).get(role_id)
             if not role:
-                return jsonify({'message': 'Role not found'}), 400
+                return jsonify({'message': 'Role not found'}), 404
             
-            return jsonify({'id': role.id, 'description': role.description}), 200
+            role = {
+                "id": role.id,
+                "description": role.description
+            }
+            
+            return jsonify({'role': role}), 200
 
     def update_role(self, role_id: int) -> Tuple[Response, int]:
         data = request.json
         with database_controller.DatabaseSession(database_controller) as session:
             role = session.query(Role).get(role_id)
             if not role:
-                return jsonify({'message': 'Role not found'}), 400
+                return jsonify({'message': 'Role not found'}), 404
             
             role.description = data.get('description', role.description)
             
@@ -39,7 +44,7 @@ class RoleController:
         with database_controller.DatabaseSession(database_controller) as session:
             role = session.query(Role).get(role_id)
             if not role:
-                return jsonify({'message': 'Role not found'}), 400
+                return jsonify({'message': 'Role not found'}), 404
         
             session.delete(role)
         
