@@ -1,25 +1,38 @@
-import os
 from dotenv import load_dotenv
-from flask import Flask
-from flask_jwt_extended import JWTManager
-from app.middlewares.authentication_middleware import authenticate_request
-from app.middlewares.activity_logger_middleware import log_activity
-from app.routes.user_routes import user_bp
-from app.routes.role_routes import role_bp
-from app.routes.event_routes import event_bp
+from loguru import logger
+
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
+from app.middlewares.activity_logger_middleware import ActivityLogger
+from app.middlewares.authentication_middleware import AuthenticateRequest
+from app.routes.user_routes import router as user_router
+from app.routes.role_routes import router as role_router
+from app.routes.event_routes import router as event_router
 
 load_dotenv()
 
-app = Flask(__name__)
-app.config['JWT_SECRET_KEY'] = os.environ.get("ENV_JWT_SECRET_KEY")
-jwt = JWTManager(app)
+app = FastAPI()
 
-app.register_blueprint(user_bp, url_prefix='/user')
-app.register_blueprint(role_bp, url_prefix='/role')
-app.register_blueprint(event_bp, url_prefix='/event')
+app.add_middleware(ActivityLogger)
+app.add_middleware(AuthenticateRequest)
 
-app.before_request(authenticate_request)
-app.before_request(log_activity)
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    logger.error(f"HTTP exception occurred: {exc.detail}, Status code: {exc.status_code}")
+    return JSONResponse(status_code=exc.status_code, content={"error": exc.detail})
 
-if __name__ == '__main__':
-    app.run()
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    logger.error(f"Validation error: {exc}, Path: {request.url.path}")
+    return JSONResponse(status_code=422, content={"error": f"Validation error: {exc}"})
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Generic error occurred at {request.url}: {exc}")
+    return JSONResponse(status_code=500, content={"error": f"Generic error at {request.url.path}: {exc}"})
+
+app.include_router(user_router, prefix='/user')
+app.include_router(role_router, prefix='/role')
+app.include_router(event_router, prefix='/event')

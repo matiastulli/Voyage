@@ -1,20 +1,17 @@
-from flask import Blueprint
-from flask_jwt_extended import jwt_required
+from fastapi import APIRouter, Request
+from app.models.event_model import EventCreate
 from app.controllers.event_controller import event_controller
 from app.decorators.role_required_decorator import requires_role
 
-event_bp = Blueprint('event', __name__)
+router = APIRouter()
 
-@event_bp.route('/create', methods=['POST'])
-@jwt_required()
-@requires_role('administrador')
-def create():
-    result = event_controller.create_event()
+@router.post('/create')
+@requires_role("admin")
+async def create(request: Request, event: EventCreate):
+    result = await event_controller.create_event(event)
     return result
 
-@event_bp.route('/<int:event_id>', methods=['GET'])
-@jwt_required()
-@requires_role('administrador')
-def get_event(event_id):
-    result = event_controller.get_event(event_id)
+@router.get('/{event_id}')
+async def get_event(request: Request, event_id: int):
+    result = await event_controller.get_event(event_id)
     return result

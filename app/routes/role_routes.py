@@ -1,34 +1,30 @@
-from flask import Blueprint
-from flask_jwt_extended import jwt_required
+from fastapi import APIRouter, Request
+from app.models.role_model import RoleCreate, RoleUpdate
 from app.controllers.role_controller import role_controller
 from app.decorators.role_required_decorator import requires_role
 
-role_bp = Blueprint('role', __name__)
+router = APIRouter()
 
-@role_bp.route('/create', methods=['POST'])
-@jwt_required()
-@requires_role('administrador')
-def create_role():
-    result = role_controller.create_role()
+@router.post('/create')
+@requires_role("admin")
+async def create_role(request: Request, role: RoleCreate):
+    result = await role_controller.create_role(role)
     return result
 
-@role_bp.route('/<int:role_id>', methods=['GET'])
-@jwt_required()
-@requires_role('administrador')
-def get_role(role_id):
-    result = role_controller.get_role(role_id)
+@router.get('/{role_id}')
+@requires_role("admin")
+async def get_role(request: Request, role_id: int):
+    result = await role_controller.get_role(role_id)
     return result
 
-@role_bp.route('/update/<int:role_id>', methods=['PUT'])
-@jwt_required()
-@requires_role('administrador')
-def update_role(role_id):
-    result = role_controller.update_role(role_id)
+@router.put('/update')
+@requires_role("admin")
+async def update_role(request: Request, role: RoleUpdate):
+    result = await role_controller.update_role(role)
     return result
 
-@role_bp.route('/delete/<int:role_id>', methods=['DELETE'])
-@jwt_required()
-@requires_role('administrador')
-def delete_role(role_id):
-    result = role_controller.delete_role(role_id)
+@router.delete('/delete/{role_id}')
+@requires_role("admin")
+async def delete_role(request: Request, role_id: int):
+    result = await role_controller.delete_role(role_id)
     return result

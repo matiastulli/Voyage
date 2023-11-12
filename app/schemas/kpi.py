@@ -7,7 +7,7 @@ class Log(Base):
     __table_args__ = {'schema': 'kpi'}
     
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_mail = Column(ForeignKey('user.user.mail'))
+    user_mail = Column(String(100), ForeignKey('user.user.mail'))
     body_data = Column(JSON)
     host = Column(String(255), nullable=False)
     route = Column(String(255), nullable=False)
