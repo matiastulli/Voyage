@@ -2,7 +2,7 @@ import jwt
 from flask import request, g
 from flask_jwt_extended import decode_token
 from app.controllers.database_controller import database_controller
-from app.schemas.auth import User
+from app.schemas.user import User
 
 def authenticate_request():
     token = request.headers.get('Authorization')

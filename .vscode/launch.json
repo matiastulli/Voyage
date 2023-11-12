@@ -5,13 +5,13 @@
             "name": "Python: Flask App",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/voyage.py",
+            "program": "${workspaceFolder}/main.py",
             "args": [
                 "run"
             ],
             "env": {
                 "FLASK_ENV": "development",
-                "FLASK_APP": "${workspaceFolder}/voyage.py"
+                "FLASK_APP": "${workspaceFolder}/main.py"
             },
             "console": "integratedTerminal",
             "justMyCode": true
